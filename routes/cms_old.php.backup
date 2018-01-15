@@ -1,0 +1,72 @@
+<?php
+/**
+ * Description: CMS Routes.
+ *
+ * @package     pusaka-maluku
+ * @author      alex
+ * @created     27/12/2017, modified: 27/12/2017 15:19
+ * @copyright   Copyright (c) 2017.
+ */
+
+Route::group([
+    'prefix' => LaravelLocalization::setLocale(),
+    'middleware' => [ 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath' ]
+], function(){
+
+    Route::group([
+        'prefix' => 'admin',
+        'as'  => 'admin.',
+        'namespace' => 'Backend'], function() {
+
+
+        Route::auth();
+        Route::group(['middleware' => 'auth'], function(){
+
+
+            Route::get('/', ['uses' => 'DashboardController@index']);
+
+            Route::group([
+                'prefix' => 'system',
+                'as'  => 'system.',
+                'namespace' => 'Core'], function() {
+                Route::resource('menus', 'MenuController');
+                Route::resource('groups', 'GroupController');
+                Route::resource('users', 'UserController');
+                Route::resource('logs', 'ActivityController');
+                Route::resource('configuration', 'ConfigController');
+            });
+
+            Route::group([
+                'prefix' => 'post',
+                'as'  => 'post.',
+                'namespace' => 'Modules\Posts'], function() {
+                Route::resource('category', 'CategoryController');
+                Route::resource('tags', 'TagsController');
+
+                Route::group([
+                    'prefix' => 'articles',
+                    'as'  => 'articles.'], function() {
+                    Route::resource('/', 'ArticlesController');
+                    Route::get('cart', ['as' => 'cart', 'uses' => 'ArticlesController@cart']);
+                    Route::get('review', ['as' => 'review', 'uses' => 'ArticlesController@review']);
+
+                });
+            });
+
+
+        });
+
+
+    });
+
+});
+
+Route::group([
+    'prefix' => 'common',
+    'as'  => 'common.',
+    'namespace' => 'Api',
+], function () {
+    Route::get('get_menu/{id?}', 'CommonApiController@get_menu');
+    Route::get('get_group', 'CommonApiController@get_group');
+    Route::get('get_company', 'CommonApiController@get_company');
+});
